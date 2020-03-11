@@ -1,8 +1,6 @@
 
-
 import math
 
-import numpy as np
 
 
 class NodeInverse ():
@@ -18,7 +16,6 @@ class NodeInverse ():
         return self.localGradient()*upstream
 
 
-
 class NodeLinear ():
     input = 1
     b=0
@@ -32,7 +29,6 @@ class NodeLinear ():
         return 1
     def downstream(self,upstream):
         return self.localGradient()*upstream
-
 
 
 class NodeAdd ():
@@ -63,7 +59,6 @@ class NodeSine ():
         return self.localGradient()*upstream
 
 
-
 class NodeCosine ():
     input = 1
     def __init__(self,num):
@@ -75,6 +70,7 @@ class NodeCosine ():
         return -math.sin(self.input)
     def downstream(self,upstream):
         return self.localGradient()*upstream
+
 
 class NodeMultiply ():
     input1 = 1
@@ -94,6 +90,18 @@ class NodeMultiply ():
     def downstream2(self,upstream):
         return self.localGradient2()*upstream
 
+class NodeSquare ():
+    input = 1
+    def __init__(self,num):
+        self.input=num
+    def output(self):
+        result = math.pow(self.input,2)
+        return result
+    def localGradient(self):
+        return 2*self.input
+    def downstream(self,upstream):
+        return self.localGradient()*upstream
+
 
 class Fx():
     W1=0
@@ -108,9 +116,7 @@ class Fx():
     def forward (self):
         N1=NodeMultiply(self.W1,self.X1)
         N2=NodeSine(N1.output())
-        N7=NodeMultiply(self.W1,self.X1)
-        N8=NodeSine(N7.output())
-        N3=NodeMultiply(N2.output(),N8.output())
+        N3 = NodeSquare(N2.output())
         N9 = NodeMultiply(self.W2,self.X2)
         N10=NodeCosine(N9.output())
         N4 = NodeAdd(N3.output(),N10.output())
@@ -121,16 +127,14 @@ class Fx():
     def backward (self):
         N1=NodeMultiply(self.W1,self.X1)
         N2=NodeSine(N1.output())
-        N7=NodeMultiply(self.W1,self.X1)
-        N8=NodeSine(N7.output())
-        N3=NodeMultiply(N2.output(),N8.output())
+        N3 = NodeSquare(N2.output())
         N9 = NodeMultiply(self.W2,self.X2)
         N10=NodeCosine(N9.output())
         N4 = NodeAdd(N3.output(),N10.output())
         N5 = NodeLinear(N4.output(),2)
         N6 = NodeInverse(N5.output())
-        dW1= N1.downstream1(N2.downstream(N3.downstream1(N4.downstream(N5.downstream(N6.downstream(1))))))
-        dX1= N1.downstream2(N2.downstream(N3.downstream1(N4.downstream(N5.downstream(N6.downstream(1))))))
+        dW1= N1.downstream1(N2.downstream(N3.downstream(N4.downstream(N5.downstream(N6.downstream(1))))))
+        dX1= N1.downstream2(N2.downstream(N3.downstream(N4.downstream(N5.downstream(N6.downstream(1))))))
         dW2= N9.downstream1(N10.downstream(N4.downstream(N5.downstream(N6.downstream(1)))))
         dX2= N9.downstream2(N10.downstream(N4.downstream(N5.downstream(N6.downstream(1)))))
 #         N1.downstream1(N2.downstream(N3.downstream1(N4.downstream(N5.downstream(N6.downstream(1))))))
@@ -138,10 +142,9 @@ class Fx():
     
 
 if __name__ == "__main__":
-    a=Fx(2,-1,-3,-2)
-    print(a.backward())
+    pass
+a=Fx(2,-1,-3,-2)
 
 
-
-
-
+print(a.forward())
+print(a.backward())
